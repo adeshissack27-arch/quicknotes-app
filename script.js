@@ -7,14 +7,36 @@ const notesList = document.querySelector("#notes-list");
 const noteCount = document.querySelector("#note-count");
 const errorMessage = document.querySelector("#error-message");
 
+const searchInput = document.querySelector("#search-input");
+
 // Store notes in an array
-let notes = [];
+
+let notes = JSON.parse(localStorage.getItem("quicknotes")) || [];
+
+
+function saveNotes() {
+    localStorage.setItem("quicknotes", JSON.stringify(notes));
+}
 
 // Display notes on the page
+
 function render() {
     notesList.replaceChildren();
 
-    notes.forEach((note) => {
+    const searchText = searchInput.value.trim().toLowerCase();
+
+    const filteredNotes = notes.filter((note) =>
+        note.text.toLowerCase().includes(searchText)
+    );
+
+if (filteredNotes.length === 0 && searchText !== "") {
+    const message = document.createElement("li");
+    message.textContent = "No notes match your search.";
+    notesList.appendChild(message);
+}
+
+    filteredNotes.forEach((note) => {
+
         const li = document.createElement("li");
         li.classList.add(`category-${note.category}`);
 
@@ -33,10 +55,14 @@ function render() {
         deleteButton.textContent = "Delete";
         deleteButton.classList.add("delete-btn");
         
+
 deleteButton.addEventListener("click", () => {
     notes = notes.filter((item) => item.id !== note.id);
+    saveNotes();
     render();
 });
+
+
 
 
         li.append(text, category, date, deleteButton);
@@ -82,9 +108,15 @@ if (text.length > 200) {
 
     notes.push(newNote);
 
+saveNotes();
+
     errorMessage.textContent = "";
     noteInput.value = "";
 
+    render();
+});
+
+searchInput.addEventListener("input", () => {
     render();
 });
 
